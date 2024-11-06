@@ -1,0 +1,62 @@
+create database roll;
+use roll;
+CREATE TABLE stud21 (
+    roll INT(4),
+    att INT(4),
+    status VARCHAR(1)
+);
+
+CREATE TABLE d_stud (
+    roll INT(4),
+    att INT(4)
+);
+
+INSERT INTO stud21 (roll, att, status) VALUES
+(1001, 70, 'A'),
+(1002, 60, 'A'),
+(1003, 85, 'A'),
+(1004, 74, 'A'),
+(1005, 50, 'A');
+
+SELECT * FROM stud21;
+DELIMITER $$
+
+CREATE PROCEDURE update_detained_students()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE roll_number INT;
+    DECLARE attendance INT;
+
+    DECLARE cur CURSOR FOR
+        SELECT roll, att
+        FROM stud21
+        WHERE att < 75;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO roll_number, attendance;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        INSERT INTO d_stud (roll, att)
+        VALUES (roll_number, attendance);
+        
+        UPDATE stud21
+        SET status = 'D'
+        WHERE roll = roll_number;
+    END LOOP;
+
+    CLOSE cur;
+END $$
+
+DELIMITER ;
+
+CALL update_detained_students();
+
+SELECT * FROM stud21;
+SELECT * FROM d_stud;
+

@@ -1,0 +1,43 @@
+create database studentdb;
+use studentdb;
+CREATE TABLE Stud (
+    Roll INT PRIMARY KEY,
+    Att DECIMAL(5, 2),
+    Status CHAR(2)
+);
+
+INSERT INTO Stud (Roll, Att, Status) VALUES
+(101, 80, NULL),
+(102, 70, NULL),
+(103, 85, NULL);
+
+DELIMITER //
+
+CREATE PROCEDURE checkAttendance(IN roll_no INT)
+BEGIN
+    DECLARE att DECIMAL(5, 2);
+    DECLARE msg VARCHAR(20);
+    
+    -- Exception handling using DECLARE CONTINUE HANDLER
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET msg = 'Roll number not found';
+
+    -- Fetch attendance
+    SELECT Att INTO att FROM Stud WHERE Roll = roll_no;
+
+    IF att < 75 THEN
+        SET msg = 'Term not granted';
+        UPDATE Stud SET Status = 'D' WHERE Roll = roll_no;
+    ELSE
+        SET msg = 'Term granted';
+        UPDATE Stud SET Status = 'ND' WHERE Roll = roll_no;
+    END IF;
+
+    SELECT msg AS ResultMessage;
+END //
+
+DELIMITER ;
+
+-- To run: 
+CALL checkAttendance(101);
+
+

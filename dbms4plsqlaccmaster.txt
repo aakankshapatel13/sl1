@@ -1,0 +1,41 @@
+create database master;
+use master;
+CREATE TABLE Account_Master (
+    Account_ID INT PRIMARY KEY,
+    Balance DECIMAL(10, 2)
+);
+
+INSERT INTO Account_Master (Account_ID, Balance) VALUES
+(201, 1000),
+(202, 500);
+
+DELIMITER //
+
+CREATE PROCEDURE withdrawAmount(IN acc_id INT, IN withdraw_amt DECIMAL(10, 2))
+BEGIN
+    DECLARE curr_balance DECIMAL(10, 2);
+    DECLARE msg VARCHAR(50);
+    
+    -- Exception Handling for Insufficient Funds
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+        SET msg = 'Insufficient funds for this withdrawal';
+
+    -- Fetch current balance
+    SELECT Balance INTO curr_balance FROM Account_Master WHERE Account_ID = acc_id;
+
+    IF withdraw_amt > curr_balance THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient funds';
+    ELSE
+        SET curr_balance = curr_balance - withdraw_amt;
+        UPDATE Account_Master SET Balance = curr_balance WHERE Account_ID = acc_id;
+        SET msg = 'Withdrawal successful';
+    END IF;
+
+    SELECT msg AS ResultMessage, curr_balance AS NewBalance;
+END //
+
+DELIMITER ;
+
+-- To run: 
+CALL withdrawAmount(201, 200);
+

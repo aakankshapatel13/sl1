@@ -1,0 +1,97 @@
+sudo dpkg -i mongodb-org-server...deb
+sudo systemctl status mongod
+sudo systemctl start mongod
+
+for shell
+sudo dpkg -i mongodb-mongosh-db
+
+
+then to start mongo 
+mongosh
+
+use DYPIEMR
+
+db.createCollection("Teachers")
+db.Teachers.insertMany([
+    { Tname: "Praveen", dno: 1, dname: "Computer", experience: 8, salary: 12000, date_of_joining: new Date("2015-08-01") },
+    { Tname: "Amit", dno: 2, dname: "IT", experience: 5, salary: 11000, date_of_joining: new Date("2018-07-01") },
+    { Tname: "Sunita", dno: 3, dname: "E&TC", experience: 6, salary: 9500, date_of_joining: new Date("2017-03-01") },
+    { Tname: "Vikram", dno: 4, dname: "Mechanical", experience: 10, salary: 15000, date_of_joining: new Date("2012-05-01") },
+    { Tname: "Kavita", dno: 5, dname: "IT", experience: 7, salary: 10000, date_of_joining: new Date("2016-09-01") }
+])
+
+db.createCollection("Students")
+db.Students.insertMany([
+    { Sname: "Raj", roll_no: 1, class: "10th" },
+    { Sname: "XYZ", roll_no: 2, class: "9th" },
+    { Sname: "Mona", roll_no: 3, class: "10th" },
+    { Sname: "John", roll_no: 4, class: "9th" }
+])
+
+
+
+// Step 3: Find information about all teachers
+db.Teachers.find().pretty()
+
+
+
+// Step 4: Find information about all teachers of the Computer department
+db.Teachers.find({ dname: "Computer" }).pretty()
+
+
+
+// Step 5: Find information about all teachers of Computer, IT, and E&TC departments
+db.Teachers.find({ dname: { $in: ["Computer", "IT", "E&TC"] } }).pretty()
+
+
+
+// Step 6: Find information about all teachers of Computer, IT, and E&TC departments with salary >= 10000
+db.Teachers.find({ dname: { $in: ["Computer", "IT", "E&TC"] }, salary: { $gte: 10000 } }).pretty()
+
+
+
+// Step 7: Find the student information having roll_no = 2 or Sname = "XYZ"
+db.Students.find({ $or: [{ roll_no: 2 }, { Sname: "XYZ" }] }).pretty()
+
+
+
+// Step 8: Update the experience of teacher "Praveen" to 10 years
+db.Teachers.update(
+    { Tname: "Praveen" },
+    { $set: { experience: 10 } },
+    { upsert: true }
+)
+
+
+
+// Step 9: Update the department of all the teachers working in the IT department to "COMP"
+db.Teachers.updateMany(
+    { dname: "IT" },
+    { $set: { dname: "COMP" } }
+)
+
+
+
+// Step 10: Find the teachers' names and their experiences from the teachers collection
+db.Teachers.find({}, { Tname: 1, experience: 1, _id: 0 }).pretty()
+
+
+
+// Step 11: Using Save() method to insert one entry in the department collection
+db.createCollection("Department")
+db.Department.save({ dept_id: 1, dept_name: "Computer", location: "Building A" })
+
+
+
+// Step 12: Using Save() method to change the department of teacher "Praveen" to "IT"
+db.Teachers.save({ Tname: "Praveen", dno: 1, dname: "IT", experience: 10, salary: 12000, date_of_joining: new Date("2015-08-01") })
+
+
+
+// Step 13: Delete all documents from the teachers collection having IT department
+db.Teachers.deleteMany({ dname: "IT" })
+
+
+
+// Step 14: Display the first 3 documents in teachers collection in ascending order by date_of_joining
+db.Teachers.find().sort({ date_of_joining: 1 }).limit(3).pretty()

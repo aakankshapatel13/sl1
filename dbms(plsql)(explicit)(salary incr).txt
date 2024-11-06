@@ -1,0 +1,61 @@
+CREATE DATABASE EmployeeDB;
+USE EmployeeDB;
+
+CREATE TABLE employees (
+    e_no INT PRIMARY KEY,
+    salary DECIMAL(10, 2)
+);
+
+CREATE TABLE increment_salary (
+    e_no INT,
+    old_salary DECIMAL(10, 2),
+    new_salary DECIMAL(10, 2)
+);
+
+INSERT INTO employees (e_no, salary) VALUES
+(1, 35000), (2, 45000), (3, 25000), (4, 30000), (5, 28000);
+
+DELIMITER $$
+
+CREATE PROCEDURE increment_employee_salaries()
+BEGIN
+    DECLARE v_avg_salary DECIMAL(10, 2);
+    DECLARE v_e_no INT;
+    DECLARE v_old_salary DECIMAL(10, 2);
+    DECLARE v_new_salary DECIMAL(10, 2);
+    DECLARE done INT DEFAULT 0;
+
+    DECLARE emp_cursor CURSOR FOR 
+        SELECT e_no, salary FROM employees WHERE salary < v_avg_salary;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    SELECT AVG(salary) INTO v_avg_salary FROM employees;
+
+    OPEN emp_cursor;
+
+    read_loop: LOOP
+        FETCH emp_cursor INTO v_e_no, v_old_salary;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        SET v_new_salary = v_old_salary * 1.10;
+        UPDATE employees SET salary = v_new_salary WHERE e_no = v_e_no;
+
+        INSERT INTO increment_salary (e_no, old_salary, new_salary)
+        VALUES (v_e_no, v_old_salary, v_new_salary);
+    END LOOP;
+
+    CLOSE emp_cursor;
+END $$
+
+DELIMITER ;
+
+CALL increment_employee_salaries();
+
+SELECT * FROM employees;
+SELECT * FROM increment_salary;
+
+DROP DATABASE EmployeeDB;
